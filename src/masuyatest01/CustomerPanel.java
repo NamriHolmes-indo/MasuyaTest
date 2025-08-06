@@ -375,6 +375,13 @@ public class CustomerPanel extends javax.swing.JPanel {
             return;
         }
         
+        if (kode.matches("^[a-zA-Z0-9]+$")) {
+            System.out.println("Input valid");
+        } else {
+            JOptionPane.showMessageDialog(this, "Kode customer tidak boleh ada karakter, harus huruf dan angka saja!");
+            return;
+        }
+        
         System.out.println("Provinsi: " + cbProvinsi.getSelectedItem());
         System.out.println("Kota: " + cbKota.getSelectedItem());
         System.out.println("Kecamatan: " + cbKecamatan.getSelectedItem());
@@ -439,9 +446,9 @@ public class CustomerPanel extends javax.swing.JPanel {
             }
         }
 
-        String timeStamp = new java.text.SimpleDateFormat("ddMMyy/HHmmss").format(new java.util.Date());
+        String timeStamp = new java.text.SimpleDateFormat("ddMMyyHHmmss").format(new java.util.Date());
         int urutan = getJumlahCustomer(); // Hitung jumlah customer dari DB
-        return String.format("CUS-%03d-%s-%s", urutan + 1, inisial, timeStamp);
+        return String.format("CUS%03d%s%s", urutan + 1, inisial, timeStamp);
     }
 
     private int getJumlahCustomer() {

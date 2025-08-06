@@ -15,6 +15,7 @@ public class MainWindow extends JFrame {
     private JPanel wrapperPanel;
     private ProdukPanel produkPanel;
     private CustomerPanel customerPanel;
+    private TransaksiPanel panelTransaksi;
 
     public MainWindow() {
         setTitle("Aplikasi Manajemen");
@@ -38,13 +39,10 @@ public class MainWindow extends JFrame {
         wrapperPanel.setBorder(BorderFactory.createEmptyBorder());
         tabbedPane.addTab("Tambah Customer", wrapperPanel);
 
-        JPanel panelCustomer = new JPanel();
-        panelCustomer.add(new JLabel("Form Tambah Customer"));
-
-        JPanel panelTransaksi = new JPanel();
-        panelTransaksi.add(new JLabel("Form Tambah Transaksi"));
-
-        tabbedPane.addTab("Tambah Transaksi", panelTransaksi);
+//        tabbedPane.addTab("Tambah Transaksi", panelTransaksi);
+        panelTransaksi = new TransaksiPanel();
+        new TransaksiController(panelTransaksi);
+        tabbedPane.addTab("Transaksi", panelTransaksi);
 
         add(tabbedPane);
 

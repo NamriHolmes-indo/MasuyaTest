@@ -134,7 +134,7 @@ public class ProdukPanel extends javax.swing.JPanel {
         int urutan = hitungUrutanProdukUntukJenis(kodeJenis);
         String urutanStr = String.format("%02d", urutan + 1);
 
-        tfKode.setText(kodeJenis + "-" + urutanStr + "-" + inisial);
+        tfKode.setText(kodeJenis + urutanStr + inisial);
     }
 
     private int hitungUrutanProdukUntukJenis(String kodeJenis) {
@@ -196,6 +196,13 @@ public class ProdukPanel extends javax.swing.JPanel {
 
         if (kode.isEmpty() || nama.isEmpty() || hargaStr.isEmpty() || stokStr.isEmpty() || jenisCombo == null) {
             JOptionPane.showMessageDialog(this, "Semua field harus diisi!");
+            return;
+        }
+        
+        if (kode.matches("^[a-zA-Z0-9]+$")) {
+            System.out.println("Input valid");
+        } else {
+            JOptionPane.showMessageDialog(this, "Kode barang tidak boleh ada karakter, harus huruf dan angka saja!");
             return;
         }
 
