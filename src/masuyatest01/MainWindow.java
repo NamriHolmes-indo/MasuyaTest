@@ -5,26 +5,38 @@
  */
 
 package masuyatest01;
+import java.awt.BorderLayout;
 import javax.swing.*;
 /**
  *
  * @author badri
  */
 public class MainWindow extends JFrame {
+    private JPanel wrapperPanel;
+    private ProdukPanel produkPanel;
+    private CustomerPanel customerPanel;
 
-    /** Creates new form MainWindow */
     public MainWindow() {
         setTitle("Aplikasi Manajemen");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1280, 720);
         setLocationRelativeTo(null);
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
         tabbedPane.addTab("Jenis Produk", new JenisProdukPanel());
 
-        JPanel panelProduk = new JPanel();
-        panelProduk.add(new JLabel("Form Tambah Produk"));
+        produkPanel = new ProdukPanel();
+        wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.add(produkPanel, BorderLayout.CENTER);
+        wrapperPanel.setBorder(BorderFactory.createEmptyBorder());
+        tabbedPane.addTab("Tambah Produk", wrapperPanel);
+                
+        customerPanel = new CustomerPanel();
+        wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.add(customerPanel, BorderLayout.CENTER);
+        wrapperPanel.setBorder(BorderFactory.createEmptyBorder());
+        tabbedPane.addTab("Tambah Customer", wrapperPanel);
 
         JPanel panelCustomer = new JPanel();
         panelCustomer.add(new JLabel("Form Tambah Customer"));
@@ -32,14 +44,35 @@ public class MainWindow extends JFrame {
         JPanel panelTransaksi = new JPanel();
         panelTransaksi.add(new JLabel("Form Tambah Transaksi"));
 
-        tabbedPane.addTab("Tambah Produk", new ProdukPanel());
-        tabbedPane.addTab("Tambah Customer", panelCustomer);
         tabbedPane.addTab("Tambah Transaksi", panelTransaksi);
 
         add(tabbedPane);
+
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                updatePadding();
+            }
+        });
+
+        updatePadding(); // Set padding awal sesuai status jendela
     }
 
-    @SuppressWarnings("unchecked")
+    private void updatePadding() {
+        int state = getExtendedState();
+        if ((state & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
+            int top = (int) (getHeight() * 0.10);
+            int left = (int) (getWidth() * 0.05);
+            int bottom = top;
+            int right = left;
+            wrapperPanel.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
+        } else {
+            wrapperPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        }
+        wrapperPanel.revalidate();
+        wrapperPanel.repaint();
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

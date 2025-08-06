@@ -12,26 +12,13 @@ import java.util.Vector;
  * @author badri
  */
 public class ProdukPanel extends javax.swing.JPanel {
-    private JTextField tfKode, tfNama, tfHarga;
-    private JSpinner spStok;
+    private JTextField tfKode, tfNama, tfHarga, tfStok;
     private JComboBox<String> cbJenis;
     private JTable table;
     private DefaultTableModel tableModel;
-    private ArrayList<String> kodeProdukList = new ArrayList<>();
 
     public ProdukPanel() {
-        setLayout(new BorderLayout());
-
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
-        JPanel innerPanel = new JPanel(new BorderLayout(20, 10));
-        innerPanel.setBorder(BorderFactory.createEmptyBorder(
-            (int) (Toolkit.getDefaultToolkit().getScreenSize().height * 0.10),
-            (int) (Toolkit.getDefaultToolkit().getScreenSize().width * 0.05),
-            (int) (Toolkit.getDefaultToolkit().getScreenSize().height * 0.10),
-            (int) (Toolkit.getDefaultToolkit().getScreenSize().width * 0.05)
-        ));
+        setLayout(new BorderLayout(10, 10));
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -39,7 +26,7 @@ public class ProdukPanel extends javax.swing.JPanel {
         tfKode = new JTextField(20);
         tfNama = new JTextField(20);
         tfHarga = new JTextField(10);
-        spStok = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+        tfStok = new JTextField(5);
         cbJenis = new JComboBox<>();
 
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -63,7 +50,7 @@ public class ProdukPanel extends javax.swing.JPanel {
         gbc.gridx = 0; gbc.gridy = 3;
         formPanel.add(new JLabel("Stok:"), gbc);
         gbc.gridx = 1;
-        formPanel.add(spStok, gbc);
+        formPanel.add(tfStok, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4;
         formPanel.add(new JLabel("Jenis Produk:"), gbc);
@@ -74,25 +61,33 @@ public class ProdukPanel extends javax.swing.JPanel {
         gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
         formPanel.add(btnTambah, gbc);
 
-        String[] columnNames = {"Kode", "Jenis", "Nama", "Harga", "Stok"};
-        tableModel = new DefaultTableModel(columnNames, 0) {
-            @Override
+        tableModel = new DefaultTableModel(new Object[]{"Kode", "Jenis", "Nama", "Harga", "Stok", "Tambah", "Kurangi", "Hapus"}, 0) {
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column >= 5;
             }
         };
+
         table = new JTable(tableModel);
-        table.setRowHeight(30);
+        table.getColumn("Tambah").setCellRenderer(new ButtonRenderer());
+        table.getColumn("Kurangi").setCellRenderer(new ButtonRenderer());
+        table.getColumn("Hapus").setCellRenderer(new ButtonRenderer());
 
-        JScrollPane tableScroll = new JScrollPane(table);
+        table.getColumn("Tambah").setCellEditor(new ButtonEditor(new JCheckBox(), this, "+"));
+        table.getColumn("Kurangi").setCellEditor(new ButtonEditor(new JCheckBox(), this, "-"));
+        table.getColumn("Hapus").setCellEditor(new ButtonEditor(new JCheckBox(), this, "hapus"));
 
-        innerPanel.add(formPanel, BorderLayout.WEST);
-        innerPanel.add(tableScroll, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(table);
 
-        contentPanel.add(innerPanel, BorderLayout.CENTER);
-        add(contentPanel);
+        // Panel pembungkus untuk padding
+        JPanel contentPanel = new JPanel(new BorderLayout());
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formPanel, scrollPane);
+        contentPanel.add(splitPane, BorderLayout.CENTER);
+
+        add(contentPanel, BorderLayout.CENTER);
 
         loadJenisProduk();
+
         tfNama.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { generateKodeProduk(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { generateKodeProduk(); }
@@ -100,9 +95,23 @@ public class ProdukPanel extends javax.swing.JPanel {
         });
 
         cbJenis.addActionListener(e -> generateKodeProduk());
-        loadProduk();
 
         btnTambah.addActionListener(e -> tambahProduk());
+
+        loadProduk();
+        autoResizeTableColumns(table);
+    }
+    
+    private void autoResizeTableColumns(JTable table) {
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 50; // minimal width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width + 10, width);
+            }
+            table.getColumnModel().getColumn(column).setPreferredWidth(width);
+        }
     }
 
     private void generateKodeProduk() {
@@ -263,58 +272,58 @@ public class ProdukPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 }
 
-class ButtonRenderer extends JButton implements TableCellRenderer {
-    public ButtonRenderer() { setOpaque(true); }
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        setText((value == null) ? "" : value.toString());
-        return this;
-    }
-}
+//class ButtonRenderer extends JButton implements TableCellRenderer {
+//    public ButtonRenderer() { setOpaque(true); }
+//    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//        setText((value == null) ? "" : value.toString());
+//        return this;
+//    }
+//}
 
-class ButtonEditor extends DefaultCellEditor {
-    private String label;
-    private boolean isPushed;
-    private ProdukPanel panel;
-    private JTable table;
-    private String action;
-
-    public ButtonEditor(JCheckBox checkBox, ProdukPanel panel, String action) {
-        super(checkBox);
-        this.panel = panel;
-        this.action = action;
-    }
-
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        this.table = table;
-        label = (value == null) ? "" : value.toString();
-        JButton button = new JButton(label);
-        button.addActionListener(e -> performAction(row));
-        isPushed = true;
-        return button;
-    }
-
-    private void performAction(int row) {
-        String kodeProduk = table.getValueAt(row, 0).toString();
-        if ("+".equals(action)) {
-            panel.ubahStok(kodeProduk, 1);
-        } else if ("-".equals(action)) {
-            panel.ubahStok(kodeProduk, -1);
-        } else if ("hapus".equals(action)) {
-            panel.hapusProduk(kodeProduk);
-        }
-        fireEditingStopped();
-    }
-
-    public Object getCellEditorValue() {
-        return label;
-    }
-
-    public boolean stopCellEditing() {
-        isPushed = false;
-        return super.stopCellEditing();
-    }
-
-    protected void fireEditingStopped() {
-        super.fireEditingStopped();
-    }
-}
+//class ButtonEditor extends DefaultCellEditor {
+//    private String label;
+//    private boolean isPushed;
+//    private ProdukPanel panel;
+//    private JTable table;
+//    private String action;
+//
+//    public ButtonEditor(JCheckBox checkBox, ProdukPanel panel, String action) {
+//        super(checkBox);
+//        this.panel = panel;
+//        this.action = action;
+//    }
+//
+//    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+//        this.table = table;
+//        label = (value == null) ? "" : value.toString();
+//        JButton button = new JButton(label);
+//        button.addActionListener(e -> performAction(row));
+//        isPushed = true;
+//        return button;
+//    }
+//
+//    private void performAction(int row) {
+//        String kodeProduk = table.getValueAt(row, 0).toString();
+//        if ("+".equals(action)) {
+//            panel.ubahStok(kodeProduk, 1);
+//        } else if ("-".equals(action)) {
+//            panel.ubahStok(kodeProduk, -1);
+//        } else if ("hapus".equals(action)) {
+//            panel.hapusProduk(kodeProduk);
+//        }
+//        fireEditingStopped();
+//    }
+//
+//    public Object getCellEditorValue() {
+//        return label;
+//    }
+//
+//    public boolean stopCellEditing() {
+//        isPushed = false;
+//        return super.stopCellEditing();
+//    }
+//
+//    protected void fireEditingStopped() {
+//        super.fireEditingStopped();
+//    }
+//}
